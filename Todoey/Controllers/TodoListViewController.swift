@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
     
@@ -18,13 +19,15 @@ class TodoListViewController: UITableViewController {
     // this complicated line creates a new PLIST file in the document directory of the application
     // in it is stored the to-do items, and the check marks (whether done or not)
     // user defaults aren't used because they are meant only for small amounts of data
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+    // that long nonsense is to create an object out of AppDelegate class
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        // print(dataFilePath)
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
 //        let newItem = Item()
 //        newItem.title = "Find Mike"
@@ -110,9 +113,11 @@ class TodoListViewController: UITableViewController {
         
         // what will happen once the user clicks on the add item button on the UIAlert
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
-            // appending added text to the array
-            let newItem = Item()
+            
+            // creating a new object as an item
+            let newItem = Item(context: self.context)
             newItem.title = textField.text!
+            newItem.done = false
             self.itemArray.append(newItem)
             
             // updating the persistent data constant
@@ -137,13 +142,11 @@ class TodoListViewController: UITableViewController {
     //MARK:- Model Manipulation Methods
     
     func saveItems() {
-        // creating an encoder
-        let encoder = PropertyListEncoder()
+        
         do {
-            let userData = try encoder.encode(itemArray)
-            try userData.write(to: dataFilePath!)
+            try context.save()
         } catch {
-            print("error encoding item array, \(error)")
+            print("error saving context, \(error)")
         }
         
         // reloading the table view cells
@@ -151,13 +154,55 @@ class TodoListViewController: UITableViewController {
     }
     
     func loadItems() {
-        if let userData = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-                itemArray = try decoder.decode([Item].self, from: userData)
-            } catch {
-                print("Error decoding item array, \(error)")
-            }
+        // creating a var to fetch data
+        let request:NSFetchRequest<Item> = Item.fetchRequest()
+        do {
+            // output is an array
+            itemArray = try context.fetch(request)
+        } catch {
+            print("error fetching request, \(error)")
         }
     }
 }
+
+
+
+/*
+ 
+ CREATING a new item and saving it
+ - first thing is a context, which is an object of AppDelegate, grabbing a reference to the contect
+ - context is of type NSPersistentContainer, and conforms to the data model type we create
+ - loading the store and gettting ready for use
+ - when new items are aded, new object of ITEM type is created, with the attributes form the data model
+ - the new object are part of the NSManagedObject, which has all the attributes from the data model
+ - the context is the temporary area, where items can be added and removed
+ - finally the context is saved and committed to the model
+ 
+*/
+
+/*
+ 
+ READING from the database
+ - first create a var that will fetch the data from the DB
+ - this var is of the type NSFetchRequest.
+    * IMPORTANT: the var has to be explicitly declared as NSFetchRequest<Item>
+ 
+*/
+
+/*
+ 
+ UPDATING new items already done
+ - changing the done property by adding a checkmark
+ 
+*/
+
+/*
+ 
+ DELETING an obj from the DB
+ - Deletes currently selected row from DB
+ - Order matters
+ 
+    context.delete(itemArray[indexPath.row])
+    itemArray.remove(at: indexPath.row)
+ 
+ */
