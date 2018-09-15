@@ -83,6 +83,8 @@ class TodoListViewController: UITableViewController {
 //        } else {
 //            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
 //        }
+        
+        tableView.reloadData()
     }
     
     //MARK:- Add new items section
