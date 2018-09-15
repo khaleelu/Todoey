@@ -13,27 +13,36 @@ class TodoListViewController: UITableViewController {
     var itemArray = [Item]()
     
     // creating a constant for setting persistent data
-    let defaults = UserDefaults.standard
+    // let defaults = UserDefaults.standard
+    
+    // this complicated line creates a new PLIST file in the document directory of the application
+    // in it is stored the to-do items, and the check marks (whether done or not)
+    // user defaults aren't used because they are meant only for small amounts of data
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        let newItem = Item()
-        newItem.title = "Find Mike"
-        itemArray.append(newItem)
+        // print(dataFilePath)
         
-        let newItem2 = Item()
-        newItem2.title = "Buy Eggos"
-        itemArray.append(newItem2)
+//        let newItem = Item()
+//        newItem.title = "Find Mike"
+//        itemArray.append(newItem)
+//
+//        let newItem2 = Item()
+//        newItem2.title = "Buy Eggos"
+//        itemArray.append(newItem2)
+//
+//        let newItem3 = Item()
+//        newItem3.title = "Kill Demogorgon"
+//        itemArray.append(newItem3)
         
-        let newItem3 = Item()
-        newItem3.title = "Kill Demogorgon"
-        itemArray.append(newItem3)
+//        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
+//            itemArray = items
+//        }
         
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            itemArray = items
-        }
+        loadItems()
     }
 
     //MARK:- TableView DataSource Methods
@@ -56,6 +65,7 @@ class TodoListViewController: UITableViewController {
             } else {
                 cell.accessoryType = .none
             }
+         
         */
         
         cell.textLabel?.text = item.title
@@ -75,6 +85,8 @@ class TodoListViewController: UITableViewController {
         // itemArray = opposite of itemArray
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+        saveItems()
+        
         tableView.deselectRow(at: indexPath, animated: true)
         
         // adding a checkmark when selected, and removing when selected again
@@ -84,7 +96,6 @@ class TodoListViewController: UITableViewController {
 //            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
 //        }
         
-        tableView.reloadData()
     }
     
     //MARK:- Add new items section
@@ -105,10 +116,9 @@ class TodoListViewController: UITableViewController {
             self.itemArray.append(newItem)
             
             // updating the persistent data constant
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            // self.defaults.set(self.itemArray, forKey: "TodoListArray")
+            self.saveItems()
             
-            // reloading the table view cells
-            self.tableView.reloadData()
         }
         
         // adding a text field to the alert
@@ -124,5 +134,30 @@ class TodoListViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
+    //MARK:- Model Manipulation Methods
+    
+    func saveItems() {
+        // creating an encoder
+        let encoder = PropertyListEncoder()
+        do {
+            let userData = try encoder.encode(itemArray)
+            try userData.write(to: dataFilePath!)
+        } catch {
+            print("error encoding item array, \(error)")
+        }
+        
+        // reloading the table view cells
+        tableView.reloadData()
+    }
+    
+    func loadItems() {
+        if let userData = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: userData)
+            } catch {
+                print("Error decoding item array, \(error)")
+            }
+        }
+    }
 }
-
