@@ -153,9 +153,9 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    func loadItems() {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
         // creating a var to fetch data
-        let request:NSFetchRequest<Item> = Item.fetchRequest()
+//        let request:NSFetchRequest<Item> = Item.fetchRequest()
         do {
             // output is an array
             itemArray = try context.fetch(request)
@@ -163,6 +163,41 @@ class TodoListViewController: UITableViewController {
             print("error fetching request, \(error)")
         }
     }
+}
+
+//MARK:- Search bar functionality
+extension TodoListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request:NSFetchRequest<Item> = Item.fetchRequest()
+        
+        // NSPredicate is a foundation class that specifies how data should be fetched/filtered. is @objc
+        // adding the search term to the request
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        // creating a sorting condition: sort by title, in ascending order
+        // adding that condition to the request. Note that is says sortDescriptors (plural), because it can have multiple sort options
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        // refreshing the table view
+        loadItems(with: request)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // showing all items once search is cancelled
+        if searchBar.text?.count == 0 {
+            loadItems()
+            
+            // code being run in the foreground
+            DispatchQueue.main.async {
+                // dismissing the keyboard and search bar
+                searchBar.resignFirstResponder()
+            }
+            
+            
+        }
+    }
+    
 }
 
 
