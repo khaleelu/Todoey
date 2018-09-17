@@ -12,6 +12,11 @@ import CoreData
 class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
+    var selectedCategory:Category? {
+        didSet {
+            loadItems()
+        }
+    }
     
     // creating a constant for setting persistent data
     // let defaults = UserDefaults.standard
@@ -29,23 +34,6 @@ class TodoListViewController: UITableViewController {
         
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
-//        let newItem = Item()
-//        newItem.title = "Find Mike"
-//        itemArray.append(newItem)
-//
-//        let newItem2 = Item()
-//        newItem2.title = "Buy Eggos"
-//        itemArray.append(newItem2)
-//
-//        let newItem3 = Item()
-//        newItem3.title = "Kill Demogorgon"
-//        itemArray.append(newItem3)
-        
-//        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-//            itemArray = items
-//        }
-        
-        loadItems()
     }
 
     //MARK:- TableView DataSource Methods
@@ -60,16 +48,6 @@ class TodoListViewController: UITableViewController {
         // value = condition ? valueIfTrue : valueIfFalse
         
         cell.accessoryType = item.done ? .checkmark : .none
-        
-        /* above line of code is the same as
- 
-            if item.done == true {
-                cell.accessoryType = .checkmark
-            } else {
-                cell.accessoryType = .none
-            }
-         
-        */
         
         cell.textLabel?.text = item.title
         
@@ -118,6 +96,7 @@ class TodoListViewController: UITableViewController {
             let newItem = Item(context: self.context)
             newItem.title = textField.text!
             newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             self.itemArray.append(newItem)
             
             // updating the persistent data constant
@@ -153,15 +132,28 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
+        // filtering results based on category
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        // searching after filtering
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
+        } else {
+            request.predicate = categoryPredicate
+        }
+        
         // creating a var to fetch data
-//        let request:NSFetchRequest<Item> = Item.fetchRequest()
+        // let request:NSFetchRequest<Item> = Item.fetchRequest()
+        
         do {
             // output is an array
             itemArray = try context.fetch(request)
         } catch {
             print("error fetching request, \(error)")
         }
+        
+        tableView.reloadData()
     }
 }
 
@@ -173,14 +165,14 @@ extension TodoListViewController: UISearchBarDelegate {
         
         // NSPredicate is a foundation class that specifies how data should be fetched/filtered. is @objc
         // adding the search term to the request
-        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
         // creating a sorting condition: sort by title, in ascending order
         // adding that condition to the request. Note that is says sortDescriptors (plural), because it can have multiple sort options
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
         // refreshing the table view
-        loadItems(with: request)
+        loadItems(with: request, predicate: predicate)
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
