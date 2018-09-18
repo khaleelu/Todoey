@@ -323,6 +323,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = YYZE7R82US;
 				INFOPLIST_FILE = Todoey/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -341,6 +342,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = YYZE7R82US;
 				INFOPLIST_FILE = Todoey/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.3;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

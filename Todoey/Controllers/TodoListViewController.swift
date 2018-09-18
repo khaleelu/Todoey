@@ -33,6 +33,15 @@ class TodoListViewController: UITableViewController {
         // Do any additional setup after loading the view, typically from a nib.
         
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        tableView.separatorStyle = .none
+        // tableView.tableHeaderView = searchBarController.searchBar
+        
+        // tableView.setContentOffset(CGPoint.init(x: 0, y: 44), animated: false)
+        
+        // self.view.addSubview(tableView)
+        
+        tableView.tableHeaderView = nil
+
         
     }
 
@@ -52,6 +61,11 @@ class TodoListViewController: UITableViewController {
         cell.textLabel?.text = item.title
         
         return cell
+    }
+    
+    // clearing the background colour of the cell
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.backgroundColor = UIColor.clear
     }
     
     // func that counts the number of items and creates that many table cells

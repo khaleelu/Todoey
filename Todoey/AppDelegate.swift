@@ -21,6 +21,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // printing the user data location within the sandbox
         // print(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).last! as String)
+        
+
         return true
     }
 
