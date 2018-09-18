@@ -56,7 +56,7 @@ class TodoListViewController: UITableViewController {
         }
         
         cell.textLabel?.textColor = UIColor.white
-        cell.textLabel?.font = UIFont(name: "HelveticaNeue-UltraLight", size: 35)
+        cell.textLabel?.font = UIFont(name: "HelveticaNeue-UltraLight", size: 25)
         
         return cell
     }
