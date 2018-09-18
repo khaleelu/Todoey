@@ -7,26 +7,18 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class TodoListViewController: UITableViewController {
     
-    var itemArray = [Item]()
+    var itemArray: Results<Item>?
+    var realm = try! Realm()
+    
     var selectedCategory:Category? {
         didSet {
             loadItems()
         }
     }
-    
-    // creating a constant for setting persistent data
-    // let defaults = UserDefaults.standard
-    
-    // this complicated line creates a new PLIST file in the document directory of the application
-    // in it is stored the to-do items, and the check marks (whether done or not)
-    // user defaults aren't used because they are meant only for small amounts of data
-    
-    // that long nonsense is to create an object out of AppDelegate class
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,14 +43,17 @@ class TodoListViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         
-        let item = itemArray[indexPath.row]
-        
-        // ternary operator ==>
-        // value = condition ? valueIfTrue : valueIfFalse
-        
-        cell.accessoryType = item.done ? .checkmark : .none
-        
-        cell.textLabel?.text = item.title
+        if let item = itemArray?[indexPath.row] {
+            // ternary operator ==>
+            // value = condition ? valueIfTrue : valueIfFalse
+            
+            cell.accessoryType = item.done ? .checkmark : .none
+            
+            cell.textLabel?.text = item.title
+
+        } else {
+            cell.textLabel?.text = "No items added"
+        }
         
         return cell
     }
@@ -70,7 +65,7 @@ class TodoListViewController: UITableViewController {
     
     // func that counts the number of items and creates that many table cells
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return itemArray.count
+        return itemArray?.count ?? 1
     }
     
     //MARK:- TableView Delegate Methods
@@ -78,9 +73,9 @@ class TodoListViewController: UITableViewController {
         // print(itemArray[indexPath.row])
         
         // itemArray = opposite of itemArray
-        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        // itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        saveItems()
+        // saveItems()
         
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -105,19 +100,22 @@ class TodoListViewController: UITableViewController {
         
         // what will happen once the user clicks on the add item button on the UIAlert
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
-            
-            // creating a new object as an item
-            let newItem = Item(context: self.context)
-            newItem.title = textField.text!
-            newItem.done = false
-            newItem.parentCategory = self.selectedCategory
-            self.itemArray.append(newItem)
-            
-            // updating the persistent data constant
-            // self.defaults.set(self.itemArray, forKey: "TodoListArray")
-            self.saveItems()
-            
+            if let currentCategory = self.selectedCategory {
+                do {
+                    try self.realm.write {
+                        let newItem = Item()
+                        newItem.title = textField.text!
+                        currentCategory.items.append(newItem)
+                    }
+                } catch {
+                    print("Error saving items \(error)")
+                }
+            }
+            self.tableView.reloadData()
         }
+            
+            
+    
         
         // adding a text field to the alert
         alert.addTextField { (alertTextField) in
@@ -130,14 +128,17 @@ class TodoListViewController: UITableViewController {
         
         // presenting the alert to the user
         present(alert, animated: true, completion: nil)
+        
     }
     
     //MARK:- Model Manipulation Methods
     
-    func saveItems() {
+    func saveItems(item: Item) {
         
         do {
-            try context.save()
+            try realm.write {
+                realm.add(item)
+            }
         } catch {
             print("error saving context, \(error)")
         }
@@ -146,65 +147,48 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
     }
     
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
-        // filtering results based on category
-        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+    func loadItems() {
         
-        // searching after filtering
-        if let additionalPredicate = predicate {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
-        } else {
-            request.predicate = categoryPredicate
-        }
-        
-        // creating a var to fetch data
-        // let request:NSFetchRequest<Item> = Item.fetchRequest()
-        
-        do {
-            // output is an array
-            itemArray = try context.fetch(request)
-        } catch {
-            print("error fetching request, \(error)")
-        }
+        itemArray = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         
         tableView.reloadData()
     }
 }
 
 //MARK:- Search bar functionality
-extension TodoListViewController: UISearchBarDelegate {
-    
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        let request:NSFetchRequest<Item> = Item.fetchRequest()
-        
-        // NSPredicate is a foundation class that specifies how data should be fetched/filtered. is @objc
-        // adding the search term to the request
-        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-        
-        // creating a sorting condition: sort by title, in ascending order
-        // adding that condition to the request. Note that is says sortDescriptors (plural), because it can have multiple sort options
-        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-        
-        // refreshing the table view
-        loadItems(with: request, predicate: predicate)
-    }
-    
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        // showing all items once search is cancelled
-        if searchBar.text?.count == 0 {
-            loadItems()
-            
-            // code being run in the foreground
-            DispatchQueue.main.async {
-                // dismissing the keyboard and search bar
-                searchBar.resignFirstResponder()
-            }
-            
-            
-        }
-    }
-    
-}
+//extension TodoListViewController: UISearchBarDelegate {
+//
+//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+//        let request:NSFetchRequest<Item> = Item.fetchRequest()
+//
+//        // NSPredicate is a foundation class that specifies how data should be fetched/filtered. is @objc
+//        // adding the search term to the request
+//        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+//
+//        // creating a sorting condition: sort by title, in ascending order
+//        // adding that condition to the request. Note that is says sortDescriptors (plural), because it can have multiple sort options
+//        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+//
+//        // refreshing the table view
+//        loadItems(with: request, predicate: predicate)
+//    }
+//
+//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+//        // showing all items once search is cancelled
+//        if searchBar.text?.count == 0 {
+//            loadItems()
+//
+//            // code being run in the foreground
+//            DispatchQueue.main.async {
+//                // dismissing the keyboard and search bar
+//                searchBar.resignFirstResponder()
+//            }
+//
+//
+//        }
+//    }
+//
+//}
 
 
 

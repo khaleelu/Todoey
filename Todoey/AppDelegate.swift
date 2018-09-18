@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import RealmSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -22,6 +23,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // printing the user data location within the sandbox
         // print(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).last! as String)
         
+        // print(Realm.Configuration.defaultConfiguration.fileURL)
+        
+        
+        do {
+            let realm = try Realm()
+        } catch {
+            print("Error initialising realm, \(error)")
+        }
 
         return true
     }
