@@ -19,7 +19,6 @@ class CategoryViewController: UITableViewController {
         super.viewDidLoad()
         loadCategories()
         tableView.separatorStyle = .none
-
     }
 
     // MARK: - Table view data source
@@ -44,6 +43,9 @@ class CategoryViewController: UITableViewController {
         
         // configure the cell...
         cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No categories added"
+        
+        cell.textLabel?.textColor = UIColor.white
+        cell.textLabel?.font = UIFont(name: "HelveticaNeue-UltraLight", size: 35)
         
         return cell
     }

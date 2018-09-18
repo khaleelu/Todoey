@@ -59,7 +59,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="0.22871127720000001" green="0.2564816177" blue="0.34118711950000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                         <color key="sectionIndexColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <searchBar key="tableHeaderView" contentMode="redraw" translucent="NO" id="jMg-xi-bpg">
+                        <searchBar key="tableHeaderView" contentMode="redraw" misplaced="YES" translucent="NO" id="jMg-xi-bpg">
                             <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <color key="backgroundColor" red="0.22871127720000001" green="0.2564816177" blue="0.34118711950000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
