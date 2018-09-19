@@ -57,13 +57,9 @@ class TodoListViewController: UITableViewController {
         
         cell.textLabel?.textColor = UIColor.white
         cell.textLabel?.font = UIFont(name: "HelveticaNeue-UltraLight", size: 25)
+        cell.backgroundColor = UIColor.clear
         
         return cell
-    }
-    
-    // clearing the background colour of the cell
-    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        cell.backgroundColor = UIColor.clear
     }
     
     // func that counts the number of items and creates that many table cells
@@ -73,21 +69,18 @@ class TodoListViewController: UITableViewController {
     
     //MARK:- TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // print(itemArray[indexPath.row])
         
-        // itemArray = opposite of itemArray
-        // itemArray[indexPath.row].done = !itemArray[indexPath.row].done
-        
-        // saveItems()
-        
+        if let item = itemArray?[indexPath.row] {
+            do {
+                try realm.write {
+                    item.done = !item.done
+                }
+            } catch {
+                print("Error saving done status, \(error)")
+            }
+        }
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        // adding a checkmark when selected, and removing when selected again
-//        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-//            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-//        } else {
-//            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-//        }
+        tableView.reloadData()
         
     }
     
