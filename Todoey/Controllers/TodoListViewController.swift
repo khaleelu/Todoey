@@ -105,9 +105,6 @@ class TodoListViewController: UITableViewController {
             }
             self.tableView.reloadData()
         }
-            
-            
-    
         
         // adding a text field to the alert
         alert.addTextField { (alertTextField) in
@@ -164,51 +161,6 @@ extension TodoListViewController: UISearchBarDelegate {
                 // dismissing the keyboard and search bar
                 searchBar.resignFirstResponder()
             }
-
-
         }
     }
-
 }
-
-
-
-/*
- 
- CREATING a new item and saving it
- - first thing is a context, which is an object of AppDelegate, grabbing a reference to the contect
- - context is of type NSPersistentContainer, and conforms to the data model type we create
- - loading the store and gettting ready for use
- - when new items are aded, new object of ITEM type is created, with the attributes form the data model
- - the new object are part of the NSManagedObject, which has all the attributes from the data model
- - the context is the temporary area, where items can be added and removed
- - finally the context is saved and committed to the model
- 
-*/
-
-/*
- 
- READING from the database
- - first create a var that will fetch the data from the DB
- - this var is of the type NSFetchRequest.
-    * IMPORTANT: the var has to be explicitly declared as NSFetchRequest<Item>
- 
-*/
-
-/*
- 
- UPDATING new items already done
- - changing the done property by adding a checkmark
- 
-*/
-
-/*
- 
- DELETING an obj from the DB
- - Deletes currently selected row from DB
- - Order matters
- 
-    context.delete(itemArray[indexPath.row])
-    itemArray.remove(at: indexPath.row)
- 
- */
