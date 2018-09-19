@@ -26,15 +26,8 @@ class TodoListViewController: UITableViewController {
         
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         tableView.separatorStyle = .none
-        // tableView.tableHeaderView = searchBarController.searchBar
-        
-        // tableView.setContentOffset(CGPoint.init(x: 0, y: 44), animated: false)
-        
-        // self.view.addSubview(tableView)
         
         tableView.tableHeaderView = nil
-
-        
     }
 
     //MARK:- TableView DataSource Methods
@@ -74,11 +67,13 @@ class TodoListViewController: UITableViewController {
             do {
                 try realm.write {
                     item.done = !item.done
+                    // realm.delete(item)
                 }
             } catch {
                 print("Error saving done status, \(error)")
             }
         }
+        
         tableView.deselectRow(at: indexPath, animated: true)
         tableView.reloadData()
         
@@ -101,6 +96,7 @@ class TodoListViewController: UITableViewController {
                     try self.realm.write {
                         let newItem = Item()
                         newItem.title = textField.text!
+                        newItem.dateCreated = Date()
                         currentCategory.items.append(newItem)
                     }
                 } catch {
@@ -152,39 +148,28 @@ class TodoListViewController: UITableViewController {
 }
 
 //MARK:- Search bar functionality
-//extension TodoListViewController: UISearchBarDelegate {
-//
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//        let request:NSFetchRequest<Item> = Item.fetchRequest()
-//
-//        // NSPredicate is a foundation class that specifies how data should be fetched/filtered. is @objc
-//        // adding the search term to the request
-//        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-//
-//        // creating a sorting condition: sort by title, in ascending order
-//        // adding that condition to the request. Note that is says sortDescriptors (plural), because it can have multiple sort options
-//        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-//
-//        // refreshing the table view
-//        loadItems(with: request, predicate: predicate)
-//    }
-//
-//    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-//        // showing all items once search is cancelled
-//        if searchBar.text?.count == 0 {
-//            loadItems()
-//
-//            // code being run in the foreground
-//            DispatchQueue.main.async {
-//                // dismissing the keyboard and search bar
-//                searchBar.resignFirstResponder()
-//            }
-//
-//
-//        }
-//    }
-//
-//}
+extension TodoListViewController: UISearchBarDelegate {
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        itemArray = itemArray?.filter("title CONTAINS %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
+    }
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // showing all items once search is cancelled
+        if searchBar.text?.count == 0 {
+            loadItems()
+
+            // code being run in the foreground
+            DispatchQueue.main.async {
+                // dismissing the keyboard and search bar
+                searchBar.resignFirstResponder()
+            }
+
+
+        }
+    }
+
+}
 
 
 
