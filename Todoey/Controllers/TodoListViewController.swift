@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
     
     var itemArray: Results<Item>?
     var realm = try! Realm()
@@ -24,7 +24,7 @@ class TodoListViewController: UITableViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        // print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         tableView.separatorStyle = .none
         
         tableView.tableHeaderView = nil
@@ -34,7 +34,7 @@ class TodoListViewController: UITableViewController {
     // func that adds data into the table cells
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let item = itemArray?[indexPath.row] {
             // ternary operator ==>
@@ -48,9 +48,7 @@ class TodoListViewController: UITableViewController {
             cell.textLabel?.text = "No items added"
         }
         
-        cell.textLabel?.textColor = UIColor.white
         cell.textLabel?.font = UIFont(name: "HelveticaNeue-UltraLight", size: 25)
-        cell.backgroundColor = UIColor.clear
         
         return cell
     }
@@ -141,6 +139,18 @@ class TodoListViewController: UITableViewController {
         itemArray = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         
         tableView.reloadData()
+    }
+    
+    override func updateModel(at indexPath: IndexPath) {
+        if let itemForDeletion = self.itemArray?[indexPath.row]{
+            do {
+                try self.realm.write {
+                    self.realm.delete(itemForDeletion)
+                }
+            } catch {
+                print("Error deleting category, \(error)")
+            }
+        }
     }
 }
 
