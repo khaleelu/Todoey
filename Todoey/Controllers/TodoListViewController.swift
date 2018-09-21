@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class TodoListViewController: SwipeTableViewController {
     
@@ -25,9 +26,14 @@ class TodoListViewController: SwipeTableViewController {
         // Do any additional setup after loading the view, typically from a nib.
         
         // print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        tableView.separatorStyle = .none
         
         tableView.tableHeaderView = nil
+        self.title = selectedCategory?.name
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        let navBar = navigationController?.navigationBar
+        navBar?.tintColor = ContrastColorOf(HexColor("3A4157")!, returnFlat: true)
     }
 
     //MARK:- TableView DataSource Methods

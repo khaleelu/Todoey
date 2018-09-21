@@ -18,7 +18,6 @@ class CategoryViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCategories()
-        tableView.separatorStyle = .none
     }
 
     // MARK: - Table view data source
