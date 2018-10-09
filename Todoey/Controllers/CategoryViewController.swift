@@ -9,15 +9,22 @@
 import UIKit
 import RealmSwift
 
-class CategoryViewController: SwipeTableViewController {
+class CategoryViewController: UITableViewController {
     
     let realm = try! Realm()
     
+    var selectedRowIndex = -1
+    
     var categoryArray: Results<Category>?
+    var itemArray: Results<Item>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         loadCategories()
+        
+        // registering custom cell
+        tableView.register(UINib(nibName: "CategoryCell", bundle: nil), forCellReuseIdentifier: "customCategoryCell")
+
     }
 
     // MARK: - Table view data source
@@ -35,13 +42,21 @@ class CategoryViewController: SwipeTableViewController {
         // nil coalescing operator; if nil then use 1
         return categoryArray?.count ?? 1
     }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        if indexPath.row == selectedRowIndex {
+            return 90 //Expanded
+        }
+        return 50 //Not expanded
+    }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // inheriting from superclass
-        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "customCategoryCell", for: indexPath) as! CustomCategoryCell
         
         // configure the cell...
-        cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No categories added"
+        cell.cellTitle?.text = categoryArray?[indexPath.row].name ?? "No categories added"
+        cell.cellSubTitle?.text = itemArray?[indexPath.row].title ?? "No items"
         
         return cell
     }
@@ -82,7 +97,13 @@ class CategoryViewController: SwipeTableViewController {
     
     //MARK:- TableView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "goToItems", sender: self)
+        // performSegue(withIdentifier: "goToItems", sender: self)
+        if selectedRowIndex == indexPath.row {
+            selectedRowIndex = -1
+        } else {
+            selectedRowIndex = indexPath.row
+        }
+        tableView.reloadRows(at: [indexPath], with: .automatic)
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -113,7 +134,7 @@ class CategoryViewController: SwipeTableViewController {
         tableView.reloadData()
     }
     
-    override func updateModel(at indexPath: IndexPath) {
+    func updateModel(at indexPath: IndexPath) {
         if let categoryForDeletion = self.categoryArray?[indexPath.row]{
             do {
                 try self.realm.write {

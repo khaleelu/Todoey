@@ -42,7 +42,7 @@ class SwipeTableViewController: UITableViewController, SwipeTableViewCellDelegat
         cell.textLabel?.textColor = UIColor.white
         cell.backgroundColor = UIColor.clear
 
-        cell.textLabel?.font = UIFont(name: "HelveticaNeue-UltraLight", size: 35)
+        cell.textLabel?.font = UIFont(name: "HelveticaNeue-UltraLight", size: 25)
         
         return cell
     }
